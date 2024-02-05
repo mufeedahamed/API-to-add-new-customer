@@ -18,8 +18,7 @@ app.listen(HTTP_PORT, () => {
     console.log("Server running on port %PORT%".replace("%PORT%", HTTP_PORT))
 });
 
-
-app.post("/api/customer/", (req, res, next) => {
+app.post("/api/customer/register/", (req, res, next) => {
 
     try {
         var errors = []
@@ -27,8 +26,8 @@ app.post("/api/customer/", (req, res, next) => {
         if (!req.body) {
             errors.push("An invalid input");
         }
-        const { 
-            name, 
+
+        const { name,
             address,
             email,
             dateOfBirth,
@@ -38,36 +37,35 @@ app.post("/api/customer/", (req, res, next) => {
             cardNumber,
             expiryDate,
             cvv,
-            timeStamp
+            timeStamp,
         } = req.body;
 
-        //validate email address
-        if (!/^\S+@\S+\.\S+$/.test(email)){
-            errors.push("Invalid email address");
+        const emailRegEx = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
+        const creditCardregEx = /^\d{12}$/;
+
+        //Validate Email Address
+        if(emailRegEx.test(email)!=true){
+            res.status(400).send("Invalid Email Address");
+            return;
         }
 
-        //validate credit card number (12 digits)
-        if (!/^\d{12}$/.test(cardNumber)){
-            errors.push("Invalid credit card number");
-        }
-
-        //handle validation errors
-        if (errors.lenght>0){
-            res.status(400).json({"errors":errors.join(",")});
+        //Validate Credit card 12 digits
+        if(creditCardregEx.test(cardNumber)!=true){
+            res.status(400).send("Invalid Credit Card Number, Only 12 digits allowed.");
             return;
         }
 
         var sql = 'INSERT INTO customer (name, address, email, dateOfBirth, gender, age, cardHolderName, cardNumber, expiryDate, cvv, timeStamp) VALUES (?,?,?,?,?,?,?,?,?,?,?)'
-        var params = ["Mufeed Ahamed Maharoof", address, email, dateOfBirth, gender, age, cardHolderName, cardNumber, expiryDate, cvv, timeStamp]
+        var params = [name, address, email, dateOfBirth, gender, age, cardHolderName, cardNumber, expiryDate, cvv, timeStamp]
         db.run(sql, params, function (err, result) {
 
             if (err) {
                 res.status(400).json({ "error": err.message })
                 return;
             } else {
-                res.json({
-                    "message": "Customer " + "Mufeed Ahamed Maharoof" + " has registered", 
-                    "customerId": this.lastID
+                res.status(201).json({
+                "message": "Customer "+ name +" has registered.",
+                "id": this.lastID  
                 })
             }
 
@@ -77,8 +75,7 @@ app.post("/api/customer/", (req, res, next) => {
     }
 });
 
-
 // Root path
-//app.get("/", (req, res, next) => {
-//    res.json({ "message": "University of Moratuwa" })
-//});
+app.get("/", (req, res, next) => {
+    res.json({ "message": "University of Moratuwa" })
+});
