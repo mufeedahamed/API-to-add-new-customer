@@ -74,8 +74,3 @@ app.post("/api/customer/register/", (req, res, next) => {
         res.status(400).send(E);
     }
 });
-
-// Root path
-app.get("/", (req, res, next) => {
-    res.json({ "message": "University of Moratuwa" })
-});
